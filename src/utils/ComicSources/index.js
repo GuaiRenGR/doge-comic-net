@@ -4,7 +4,6 @@ import htmanga from './htmanga';
 import ehentai from './ehentai';
 import hitomi from './hitomi';
 import picacg from './picacg';
-import jmapi from './jmapi';
 import { downloadComic } from './helpers';
 
 const jmSource = {
@@ -21,7 +20,7 @@ const jmSource = {
     hotTags: () => jm.hotTags()
 };
 
-const sources = [jmSource, jmapi, picacg, ehentai, htmanga, nhentai, hitomi];
+const sources = [jmSource, picacg, ehentai, htmanga, nhentai, hitomi];
 
 for (let i = 0; i < sources.length; i++) {
     if (!sources[i].download) {

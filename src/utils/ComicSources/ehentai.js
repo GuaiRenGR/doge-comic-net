@@ -2,6 +2,7 @@ import { absoluteUrl, cacheUrls, firstMatch, requestText, stripHtml } from './he
 
 const BASE = 'https://e-hentai.org';
 const HEADERS = { Referer: `${BASE}/`, Cookie: 'nw=1' };
+const DETAIL_CONCURRENCY = 6;
 
 function parseGalleryCards(html) {
     const items = [];
@@ -41,7 +42,7 @@ const source = {
             chapters: [{ id: `${link}|${pages}`, name: '正文' }]
         };
     },
-    async chapter(chapterId) {
+    async chapter(chapterId, onProgress) {
         const split = chapterId.lastIndexOf('|');
         const link = chapterId.slice(0, split);
         const pages = Number(chapterId.slice(split + 1)) || 1;
@@ -52,16 +53,32 @@ const source = {
             let match;
             while ((match = regex.exec(html))) if (!imagePages.includes(match[1])) imagePages.push(match[1]);
         }
-        const images = [];
-        for (let i = 0; i < imagePages.length; i++) {
-            const html = await requestText(imagePages[i], HEADERS);
-            const url = firstMatch(html, /id=["']img["'][^>]+src=["']([^"']+)/i);
-            if (url) images.push(url);
+        const images = new Array(imagePages.length);
+        let resolved = 0;
+        for (let start = 0; start < imagePages.length; start += DETAIL_CONCURRENCY) {
+            const end = Math.min(start + DETAIL_CONCURRENCY, imagePages.length);
+            const tasks = [];
+            for (let i = start; i < end; i++) {
+                tasks.push(requestText(imagePages[i], HEADERS).then(html => {
+                    images[i] = firstMatch(html, /id=["']img["'][^>]+src=["']([^"']+)/i);
+                    resolved++;
+                    if (onProgress) onProgress(resolved, imagePages.length);
+                }));
+            }
+            await Promise.all(tasks);
         }
-        if (!images.length) throw new Error('无法解析 E-Hentai 图片列表');
-        return images;
+        const urls = images.filter(Boolean);
+        if (!urls.length) throw new Error('无法解析 E-Hentai 图片列表');
+        return urls;
     },
-    async cacheChapter(id, progress) { return cacheUrls(this.key, id, await this.chapter(id), this.imageHeaders, progress); }
+    async cacheChapter(id, progress) {
+        const urls = await this.chapter(id, (done, total) => {
+            if (progress) progress(done, total * 2);
+        });
+        return cacheUrls(this.key, id, urls, this.imageHeaders, (done, total) => {
+            if (progress) progress(total + done, total * 2);
+        });
+    }
 };
 
 export default source;
