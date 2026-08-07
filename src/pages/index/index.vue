@@ -18,10 +18,6 @@
                     @click="openLink('network')" />
             </div>
             <div class="content">
-                <div class="index-card" :style="{ width: coverWidth, height: coverHeight }" @click="openLink('store')">
-                    <image style="width: 37vh; height: 37vh;" :src="require('../../assets/books2.png?base64')" />
-                    <text class="index-card-text">漫画库</text>
-                </div>
                 <ComicCard class="comic-card" :style="{ width: coverWidth, height: coverHeight }"
                     v-for="(item, index) in showingList" :key="version" :node="item.node" @click="open(item.node)" />
             </div>
@@ -61,7 +57,7 @@ export default {
     },
     computed: {
         showingList() {
-            return this.history.slice(1 - this.lineConut).reverse();
+            return this.history.slice(-this.lineConut).reverse();
         },
         lineConut() {
             return Math.floor(this.vw / (0.8 * this.vh));
@@ -117,21 +113,4 @@ export default {
     margin: 0 7vh 7vh 0;
 }
 
-.index-card {
-    margin: 0 7vh 7vh 0;
-    background-color: #ffffff;
-    border-radius: 6vh;
-    align-items: center;
-    justify-content: center;
-}
-
-.index-card:active {
-    opacity: 0.6;
-}
-
-.index-card-text {
-    margin-top: 7vh;
-    font-size: 10vh;
-    color: @link;
-}
 </style>
