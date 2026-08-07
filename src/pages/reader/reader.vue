@@ -17,12 +17,10 @@
                                     :style="{ 'margin-left': showSidebar ? '0' : '4vh' }" />
                                 <scroller show-scrollbar="false" scroll-direction="horizontal" over-scroll="50px"
                                     over-fling="50px" @scroll="setOffsetX">
-                                    <div>
-                                        <richtext :key="reader.index">
-                                            <template v-for="url in reader.segment">
-                                                <image :style="{ width: width }" :src="url" /><br>
-                                            </template>
-                                        </richtext>
+                                    <div :key="reader.index" class="reader-images">
+                                        <div v-for="url in reader.segment" :key="url" class="reader-image">
+                                            <JmImage :url="url" :width="width" />
+                                        </div>
                                     </div>
                                 </scroller>
                             </div>
@@ -74,6 +72,7 @@ import IconButton from "../../components/icon-button.vue";
 import SeekbarCard from "../../components/seekbar-card.vue";
 import PageTurningButton from "../../components/page-turning-button.vue";
 import Toast from "../../components/toast.vue";
+import JmImage from "../../components/jm-image.vue";
 import ComicReader from "../../utils/ComicReader/ComicReader.js";
 import Storage from "../../utils/Storage/Storage.js";
 
@@ -86,7 +85,8 @@ export default {
         IconButton,
         Toast,
         SeekbarCard,
-        PageTurningButton
+        PageTurningButton,
+        JmImage
     },
     data() {
         return {
@@ -207,6 +207,11 @@ export default {
     line-height: 14vh;
     margin-top: 1.5vh;
     color: @on-neutral;
+}
+
+.reader-images,
+.reader-image {
+    flex-direction: column;
 }
 
 .lower-title {

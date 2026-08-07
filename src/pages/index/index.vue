@@ -14,6 +14,8 @@
                     @click="openLink('favorite')" />
                 <IndexButton class="index-button" :icon="require('../../assets/history.png?base64')" text="完整历史"
                     @click="openLink('history')" />
+                <IndexButton class="index-button" :icon="require('../../assets/books.png?base64')" text="联网漫画"
+                    @click="openLink('network')" />
             </div>
             <div class="content">
                 <div class="index-card" :style="{ width: coverWidth, height: coverHeight }" @click="openLink('store')">

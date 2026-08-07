@@ -8,6 +8,7 @@
     "history": "pages/history/history.vue",
     "favorite": "pages/favorite/favorite.vue",
     "setting": "pages/setting/setting.vue",
-    "store": "pages/store/store.vue"
+    "store": "pages/store/store.vue",
+    "network": "pages/network/network.vue"
   }
 }

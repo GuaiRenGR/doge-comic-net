@@ -18,7 +18,9 @@ export default class ComicReader {
     }
 
     async load() {
-        if (this.node.type === 'file') {
+        if (this.node.type === 'network') {
+            this.urls = this.node.urls || [];
+        } else if (this.node.type === 'file') {
             this.urls = [`file://${this.node.path}`];
         } else {
             const files = await fs.readdir(this.node.path, { withFileTypes: true });

@@ -18,7 +18,9 @@ export default {
         }
     },
     async created() {
-        if (this.node.type === 'file') {
+        if (this.node.type === 'network') {
+            this.cover = this.node.cover || '';
+        } else if (this.node.type === 'file') {
             this.cover = `file://${this.node.path}`;
         } else {
             let img = (await fs.readdir(this.node.path, { withFileTypes: true }))
