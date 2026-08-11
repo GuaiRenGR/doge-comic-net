@@ -41,10 +41,12 @@ export default {
         return {
             appName: meta.name,
             info: {
-                '作者': 'adogecheems',
+                '原作者': 'adogecheems',
+                '网络版维护者': 'GuaiRenGR',
+                '原项目': 'https://github.com/adogecheems/doge-comic',
                 '版本': `${meta.version}`,
                 '许可证': 'AGPLv3',
-                'GitHub': 'https://github.com/adogecheems/doge-comic',
+                'GitHub': 'https://github.com/GuaiRenGR/doge-comic-net',
                 '程序路径': meta.appPath,
             },
         };

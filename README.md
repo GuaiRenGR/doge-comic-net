@@ -2,6 +2,8 @@
 
 一款为有道词典笔 OS 设计的第三方漫画阅读器，使用 Vue.js 构建。
 
+本项目由 [GuaiRenGR](https://github.com/GuaiRenGR) 维护，fork 自 [adogecheems/doge-comic](https://github.com/adogecheems/doge-comic)。
+
 此项目系我整的抽象大活，请勿质疑它发明出来的意义
 
 ## 特性
@@ -39,7 +41,7 @@ nHentai 与 Hitomi 已接入，但尚未在有道 A7P 上完成可用性验证�
 [听秋念的教程](https://www.bilibili.com/read/cv40931661/?plat_id=35&share_from=article&share_medium=iphone&share_plat=ios&share_source=QQ&share_tag=s_i&timestamp=1741365791&unique_k=3UbJ6rn&opus_fallback=1)
 获取 adb 权限
 
-2. 在 [releases](https://github.com/adogecheems/doge-reader/releases) 页面下载最新版本的安装包
+2. 在 [releases](https://github.com/GuaiRenGR/doge-comic-net/releases) 页面下载最新版本的安装包
 
 3. 连接词典笔的 adb（教程中有写），并将 .amr 安装包文件 push 到词典笔 `/userdisk` 任意目录下（其实你在词典笔的 mtp 文件夹把文件直接拖进去也行...）
 
@@ -62,7 +64,7 @@ adb shell "miniapp_cli install /userdisk/Favorite/all.amr" # 也可以是你自�
 1. 克隆项目存储库到本地
 
 ```bash
-git clone https://github.com/adogecheems/doge-reader.git
+git clone https://github.com/GuaiRenGR/doge-comic-net.git
 ```
 
 2. 安装依赖
@@ -106,8 +108,11 @@ python convert.py <漫画文件夹路径|zip文件路径|PDF文件路径> [<输�
 
 ## 关于
 
-作者：adogecheems  
-许可证：AGPLv3
+- 原项目：[adogecheems/doge-comic](https://github.com/adogecheems/doge-comic)
+- 原作者：[adogecheems](https://github.com/adogecheems)
+- 网络版维护者：[GuaiRenGR](https://github.com/GuaiRenGR)
+- 项目地址：[github.com/GuaiRenGR/doge-comic-net](https://github.com/GuaiRenGR/doge-comic-net)
+- 许可证：AGPLv3
 
 "Doge" 是“词典笔 OS 通用生态系统”的意思 (Dictpen OS Generic Ecosystem) 🐶
 
