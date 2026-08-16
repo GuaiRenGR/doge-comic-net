@@ -38,6 +38,15 @@ export default class Storage {
         }
     }
 
+    async _remove(key) {
+        try {
+            await (await storage).default.removeStorage(key);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     async addItem(node, progress, target = 'history') {
         let history = await this._get(target);
         if (!history) {

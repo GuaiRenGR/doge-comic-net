@@ -22,6 +22,11 @@ function mediaUrl(media) {
     return `${server}/static/${path}`;
 }
 
+function isUnauthorized(status, body) {
+    const message = String((body && (body.message || body.error)) || '');
+    return status === 401 || String(body && body.code) === '401' || /unauthorized/i.test(message);
+}
+
 const source = {
     key: 'picacg', name: '哔咔', token: '', requiresLogin: true,
     get isLogged() { return !!this.token; },
@@ -43,8 +48,18 @@ const source = {
             url: `${API}/${path}`, method: method.toUpperCase(), headers: this.signedHeaders(method.toUpperCase(), path),
             data: data ? JSON.stringify(data) : undefined, timeout: 15000
         });
-        const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+        let body;
+        try {
+            body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+        } catch (error) {
+            body = {};
+        }
         const status = response.status || response.statusCode;
+        if (path !== 'auth/sign-in' && isUnauthorized(status, body)) {
+            this.token = '';
+            await storage._remove('picacgToken');
+            throw new Error('哔咔登录已过期，请重新登录');
+        }
         if (status && status !== 200) throw new Error((body && body.message) || `HTTP ${status}`);
         if (!body || body.message !== 'success') throw new Error((body && body.message) || '哔咔请求失败');
         return body.data;
