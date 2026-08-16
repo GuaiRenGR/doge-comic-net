@@ -17,6 +17,10 @@
                 <IndexButton class="index-button" :icon="require('../../assets/books.png?base64')" text="联网漫画"
                     @click="openLink('network')" />
             </div>
+            <div class="options-line pixiv-line">
+                <IndexButton class="index-button" :icon="require('../../assets/image.png?base64')" text="pixiv推荐"
+                    @click="openPixivRecommend" />
+            </div>
             <div class="content">
                 <ComicCard class="comic-card" :style="{ width: coverWidth, height: coverHeight }"
                     v-for="(item, index) in showingList" :key="version" :node="item.node" @click="open(item.node)" />
@@ -73,6 +77,9 @@ export default {
         openLink(link) {
             $falcon.navTo(link);
         },
+        openPixivRecommend() {
+            $falcon.navTo('network', { source: 'pixiv', recommend: '1' });
+        },
         back() {
             this.$page.finish();
         },
@@ -101,6 +108,10 @@ export default {
 .index-button {
     flex: 1;
     margin-right: 6vh;
+}
+
+.pixiv-line {
+    margin-top: 4vh;
 }
 
 .content {

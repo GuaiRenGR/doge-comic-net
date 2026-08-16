@@ -14,18 +14,26 @@
             <div class="search-row">
                 <div class="search-input" @click="activeInput = 'keyword'">
                     <text v-if="keyword" class="search-value">{{ keyword }}</text>
-                    <text v-else class="search-placeholder">漫画名、作者或 JM 号</text>
+                    <text v-else class="search-placeholder">{{ sourceKey === 'pixiv' ? '作品名、作者或标签' : '漫画名、作者或 JM 号' }}</text>
                 </div>
                 <div class="action primary" @click="search(true)"><text class="action-text">搜索</text></div>
             </div>
             <div v-if="activeSource.requiresLogin && !activeSource.isLogged" class="login-panel">
                 <div class="login-field" @click="activeInput = 'account'">
-                    <text v-if="account" class="search-value">{{ account }}</text><text v-else class="search-placeholder">哔咔邮箱</text>
+                    <text v-if="account" class="search-value">{{ account }}</text><text v-else class="search-placeholder">{{ activeSource.key === 'pixiv' ? 'Pixiv账号' : '哔咔邮箱' }}</text>
                 </div>
                 <div class="login-field" @click="activeInput = 'password'">
-                    <text v-if="password" class="search-value">{{ passwordMask }}</text><text v-else class="search-placeholder">哔咔密码</text>
+                    <text v-if="password" class="search-value">{{ passwordMask }}</text><text v-else class="search-placeholder">{{ activeSource.key === 'pixiv' ? 'Pixiv密码' : '哔咔密码' }}</text>
                 </div>
-                <div class="action primary" @click="loginPicacg"><text class="action-text">登录</text></div>
+                <div class="action primary" @click="loginSource"><text class="action-text">登录</text></div>
+            </div>
+            <div v-if="activeSource.key === 'pixiv' && !activeSource.isLogged" class="token-panel">
+                <div class="login-field token-field" @click="activeInput = 'tokenText'">
+                    <text v-if="tokenText" class="search-value">{{ tokenMask }}</text>
+                    <text v-else class="search-placeholder">粘贴 token 或 PHPSESSID</text>
+                </div>
+                <div class="action" @click="importPixivToken"><text class="action-text">导入令牌</text></div>
+                <div class="action" @click="importPixivTokenFile"><text class="action-text">读取文件</text></div>
             </div>
             <div class="keyboard">
                 <div class="key-row" v-for="(row, rowIndex) in keyboard" :key="rowIndex">
@@ -43,12 +51,19 @@
             </div>
             <text v-if="message" class="status">{{ message }}</text>
 
-            <div v-if="comic" class="detail">
-                <image resize="cover" class="detail-cover" :src="comic.cover" />
-                <div class="detail-body">
+            <div v-if="comic" class="detail" :class="{ 'pixiv-detail': sourceKey === 'pixiv' }">
+                <image :resize="sourceKey === 'pixiv' ? 'contain' : 'cover'"
+                    class="detail-cover" :class="{ 'pixiv-detail-cover': sourceKey === 'pixiv' }" :src="comic.cover" />
+                <div class="detail-body" :class="{ 'pixiv-detail-body': sourceKey === 'pixiv' }">
                     <text class="comic-title">{{ comic.name }}</text>
-                    <text class="meta">JM{{ comic.id }} · {{ comic.author }}</text>
-                    <text class="description">{{ comic.description }}</text>
+                    <text class="meta">{{ activeSource.name }} #{{ comic.id }} · {{ comic.author }}</text>
+                    <text v-if="sourceKey === 'pixiv'" class="detail-section-title">作品简介</text>
+                    <text v-if="comic.description" class="description">{{ comic.description }}</text>
+                    <text v-else class="description empty-description">暂无简介</text>
+                    <div v-if="sourceKey === 'pixiv'" class="pixiv-detail-info">
+                        <text v-if="comic.tags && comic.tags.length" class="pixiv-tags" lines="2" text-overflow="ellipsis">标签：{{ comic.tags.join(' · ') }}</text>
+                        <text class="pixiv-stats">{{ comic.pageCount || 1 }} 页 · 浏览 {{ comic.totalView || 0 }} · 收藏 {{ comic.totalBookmarks || 0 }}</text>
+                    </div>
                     <div class="detail-actions">
                         <div class="action detail-action primary" @click="readChapter(comic.chapters[0])"><text class="action-text">开始阅读</text></div>
                         <div class="action detail-action" @click="downloadComic"><text class="action-text">下载全部</text></div>
@@ -63,12 +78,24 @@
                 </div>
             </div>
 
+            <div v-else-if="sourceKey === 'pixiv'" class="pixiv-results">
+                <div class="pixiv-result" v-for="item in results" :key="item.id" @click="openComic(item.id)">
+                    <div class="pixiv-cover-box">
+                        <image resize="contain" class="pixiv-cover" :src="item.cover" />
+                    </div>
+                    <text class="pixiv-title" lines="2" text-overflow="ellipsis">{{ item.name }}</text>
+                    <text class="pixiv-author" lines="1" text-overflow="ellipsis">{{ item.author }}</text>
+                    <text class="pixiv-meta">{{ item.pageCount || 1 }} 页 · 收藏 {{ item.totalBookmarks || 0 }}</text>
+                    <text v-if="item.description" class="pixiv-summary" lines="2" text-overflow="ellipsis">{{ item.description }}</text>
+                </div>
+                <div v-if="hasMore && results.length" class="action more" @click="search(false)"><text class="action-text">加载更多</text></div>
+            </div>
             <div v-else class="results">
                 <div class="result" v-for="item in results" :key="item.id" @click="openComic(item.id)">
                     <image resize="cover" class="cover" :src="item.cover" />
                     <div class="result-text">
                         <text class="comic-title">{{ item.name }}</text>
-                        <text class="meta">JM{{ item.id }} · {{ item.author }}</text>
+                        <text class="meta">{{ activeSource.name }} #{{ item.id }} · {{ item.author }}</text>
                         <text class="description">{{ item.description }}</text>
                     </div>
                 </div>
@@ -88,26 +115,38 @@ export default {
     components: { ButtonColumn, IconButton },
     data() {
         return {
-            sources, sourceKey: 'jm', keyword: '', account: '', password: '', activeInput: 'keyword', keyboardUppercase: false,
-            results: [], comic: null, page: 1, total: 0, busy: false, message: '', hotTags: [],
+            sources, sourceKey: 'jm', keyword: '', account: '', password: '', tokenText: '', activeInput: 'keyword', keyboardUppercase: false,
+            results: [], comic: null, page: 1, total: 0, busy: false, message: '', hotTags: [], recommendMode: false,
             keyboard: [
                 ['1','2','3','4','5','6','7','8','9','0'],
                 ['Q','W','E','R','T','Y','U','I','O','P'],
                 ['A','S','D','F','G','H','J','K','L'],
-                ['Z','X','C','V','B','N','M','@','.','_','-','!']
+                ['Z','X','C','V','B','N','M','@','.','_','-','!'],
+                ['=',';','+','/','?',':','{','}','"',',']
             ]
         };
     },
     async created() {
+        const options = this.$page.options || {};
+        if (options.source && findSource(options.source)) this.sourceKey = options.source;
         for (let i = 0; i < this.sources.length; i++) {
             if (this.sources[i].init) await this.sources[i].init();
         }
         await this.loadHotTags();
+        this.recommendMode = options.recommend === '1' || options.recommend === 1 || options.recommend === true;
+        if (this.recommendMode && this.sourceKey === 'pixiv') {
+            if (this.activeSource.isLogged) await this.loadRecommend(true);
+            else this.message = '请先登录 Pixiv，登录成功后会自动加载推荐';
+        }
     },
     computed: {
         hasMore() { return this.results.length < this.total; },
         activeSource() { return findSource(this.sourceKey); },
-        passwordMask() { return '*'.repeat(this.password.length); }
+        passwordMask() { return '*'.repeat(this.password.length); },
+        tokenMask() {
+            if (this.tokenText.length < 12) return '*'.repeat(this.tokenText.length);
+            return `${this.tokenText.slice(0, 6)}…${this.tokenText.slice(-6)}`;
+        }
     },
     methods: {
         back() { this.$page.finish(); },
@@ -115,7 +154,8 @@ export default {
         appendKey(key) {
             const field = this.activeInput;
             if (/^[A-Z]$/.test(key) && !this.keyboardUppercase) key = key.toLowerCase();
-            if (this[field].length < 80) this[field] += key;
+            const limit = field === 'tokenText' ? 2048 : 80;
+            if (this[field].length < limit) this[field] += key;
         },
         backspace() { this[this.activeInput] = this[this.activeInput].slice(0, -1); },
         clearKeyword() { this[this.activeInput] = ''; },
@@ -128,14 +168,37 @@ export default {
         selectSource(key) {
             if (this.busy || key === this.sourceKey) return;
             this.sourceKey = key; this.results = []; this.comic = null; this.page = 1; this.total = 0;
-            this.message = ''; this.activeInput = key === 'picacg' ? 'account' : 'keyword'; this.loadHotTags();
+            this.message = ''; this.activeInput = ['picacg', 'pixiv'].indexOf(key) >= 0 ? 'account' : 'keyword'; this.loadHotTags();
         },
-        async loginPicacg() {
+        async loginSource() {
             if (this.busy || !this.account || !this.password) return;
-            this.busy = true; this.message = '正在登录哔咔…';
-            try { await this.activeSource.login(this.account, this.password); this.message = '哔咔登录成功'; this.activeInput = 'keyword'; }
+            this.busy = true; this.message = `正在登录${this.activeSource.name}…`;
+            try { await this.activeSource.login(this.account, this.password); this.message = `${this.activeSource.name}登录成功`; this.activeInput = 'keyword'; }
             catch (error) { this.message = `登录失败：${error.message || error}`; }
             this.busy = false;
+            if (this.recommendMode && this.sourceKey === 'pixiv' && this.activeSource.isLogged) await this.loadRecommend(true);
+        },
+        async importPixivToken() {
+            if (this.busy || !this.tokenText) return;
+            this.busy = true; this.message = '正在导入 Pixiv 令牌…';
+            try {
+                const mode = await this.activeSource.importToken(this.tokenText);
+                this.message = mode === 'cookie' ? 'Pixiv cookie 导入成功' : 'Pixiv token 导入成功';
+                this.tokenText = ''; this.activeInput = 'keyword';
+            } catch (error) { this.message = `导入失败：${error.message || error}`; }
+            this.busy = false;
+            if (this.recommendMode && this.sourceKey === 'pixiv' && this.activeSource.isLogged) await this.loadRecommend(true);
+        },
+        async importPixivTokenFile() {
+            if (this.busy) return;
+            this.busy = true; this.message = '正在读取 /userdisk/Favorite/pixiv-token.txt…';
+            try {
+                const mode = await this.activeSource.importFile();
+                this.message = mode === 'cookie' ? 'Pixiv cookie 导入成功' : 'Pixiv token 导入成功';
+                this.activeInput = 'keyword';
+            } catch (error) { this.message = `读取失败：${error.message || error}`; }
+            this.busy = false;
+            if (this.recommendMode && this.sourceKey === 'pixiv' && this.activeSource.isLogged) await this.loadRecommend(true);
         },
         async search(reset) {
             if (this.busy || !this.keyword.trim()) return;
@@ -145,6 +208,17 @@ export default {
                 const data = await this.activeSource.search(this.keyword, this.page);
                 this.results = this.results.concat(data.items); this.total = data.total; this.page++;
                 this.message = this.results.length ? `共找到 ${this.total} 部漫画` : '没有找到相关漫画';
+            } catch (error) { this.message = error.message || String(error); }
+            this.busy = false;
+        },
+        async loadRecommend(reset = true) {
+            if (this.busy || !this.activeSource.recommend) return;
+            this.busy = true; this.message = `正在加载${this.activeSource.name}推荐…`;
+            if (reset) { this.page = 1; this.results = []; this.comic = null; }
+            try {
+                const data = await this.activeSource.recommend(this.page);
+                this.results = this.results.concat(data.items); this.total = data.total; this.page++;
+                this.message = this.results.length ? `推荐作品 ${this.results.length} 部` : '暂时没有推荐作品';
             } catch (error) { this.message = error.message || String(error); }
             this.busy = false;
         },
@@ -201,7 +275,9 @@ export default {
 .action-text { color: @on-neutral; font-size: 8vh; }
 .status { margin: 7vh 0; color: @outline; font-size: 7vh; }
 .login-panel { width: 95%; margin-top: 4vh; flex-direction: row; align-items: center; }
+.token-panel { width: 95%; margin-top: 3vh; flex-direction: row; align-items: center; }
 .login-field { flex: 1; height: 22vh; margin-right: 3vh; padding: 0 4vh; border-radius: 5vh; background-color: @neutral; justify-content: center; }
+.token-field { margin-right: 0; }
 .keyboard { width: 95%; margin-top: 4vh; }
 .key-row { width: 100%; height: 17vh; margin-bottom: 2vh; flex-direction: row; }
 .key { flex: 1; height: 17vh; margin: 0 1vh; border-radius: 3vh; background-color: @neutral; justify-content: center; align-items: center; }
@@ -219,10 +295,26 @@ export default {
 .comic-title { color: @on-neutral; font-size: 10vh; line-height: 13vh; }
 .meta { margin-top: 2vh; color: @outline; font-size: 7vh; }
 .description { margin-top: 4vh; color: @on-neutral; font-size: 7vh; line-height: 10vh; }
+.empty-description { color: @outline; }
 .more { margin-left: 0; width: 50vh; }
+.pixiv-results { margin-bottom: 10vh; flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
+.pixiv-result { width: 48vh; min-height: 86vh; margin: 0 4vh 6vh 0; padding: 3vh; border-radius: 4vh; background-color: @neutral; }
+.pixiv-result:active { opacity: .6; }
+.pixiv-cover-box { width: 48vh; height: 56vh; border-radius: 3vh; background-color: @surface; justify-content: center; align-items: center; }
+.pixiv-cover { width: 48vh; height: 56vh; border-radius: 3vh; }
+.pixiv-title { margin-top: 3vh; color: @on-neutral; font-size: 7vh; line-height: 9vh; }
+.pixiv-author { margin-top: 1vh; color: @outline; font-size: 5.5vh; line-height: 7vh; }
+.pixiv-meta { margin-top: 1vh; color: @outline; font-size: 5.5vh; line-height: 7vh; }
+.pixiv-summary { margin-top: 2vh; color: @on-neutral; font-size: 5.5vh; line-height: 7vh; }
 .detail { width: 95%; flex-direction: row; flex-wrap: wrap; }
 .detail-cover { width: 45vh; height: 63vh; border-radius: 5vh; }
 .detail-body { width: 95vh; margin-left: 7vh; }
+.pixiv-detail-cover { width: 52vh; height: 68vh; }
+.pixiv-detail-body { width: 125vh; }
+.detail-section-title { margin-top: 4vh; color: @outline; font-size: 6vh; line-height: 8vh; }
+.pixiv-detail-info { margin-top: 3vh; }
+.pixiv-tags { color: @outline; font-size: 5.5vh; line-height: 7vh; }
+.pixiv-stats { margin-top: 1vh; color: @outline; font-size: 5.5vh; line-height: 7vh; }
 .detail-actions { margin-top: 7vh; }
 .detail-action { margin-left: 0; margin-right: 4vh; }
 .chapters { width: 100%; margin-top: 8vh; }

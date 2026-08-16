@@ -1,119 +1,142 @@
-<h1 style="text-align:center">Doge 漫画网络版</h1>
+<p align="center">
+  <img src="app_icon.png" width="128" height="128" alt="Doge 漫画图标">
+</p>
 
-一款为有道词典笔 OS 设计的第三方漫画阅读器，使用 Vue.js 构建。
+<h1 align="center">Doge 漫画网络版</h1>
 
-本项目由 [GuaiRenGR](https://github.com/GuaiRenGR) 维护，fork 自 [adogecheems/doge-comic](https://github.com/adogecheems/doge-comic)。
+<p align="center">为有道词典笔 OS 设计的第三方漫画搜索、阅读与下载应用。</p>
 
-此项目系我整的抽象大活，请勿质疑它发明出来的意义
+<p align="center">
+  <a href="README_en.md">English</a>
+  ·
+  <a href="https://github.com/GuaiRenGR/doge-comic-net/releases">下载发行版</a>
+  ·
+  <a href="Pixiv登录与Token-Cookie获取教程.md">Pixiv 登录教程</a>
+  ·
+  <a href="https://github.com/GuaiRenGR/doge-comic">原始项目</a>
+</p>
 
-## 特性
 
-- 适配各型号词典笔屏幕的响应式设计
-- 本地文件浏览支持
-- 联网搜索、阅读和下载漫画
-- 在线 WebP 图片自动转换为 JPEG
-- 精美的界面设计
-- 可隐藏的侧边栏
-- 自由放缩图片大小
-- 阅读进度自动保存
+<p align="center">
+  <img src="https://img.shields.io/badge/平台-有道词典笔%20%7C%20Linux%20ARMv7l-2ea44f" alt="支持平台">
+  <img src="https://img.shields.io/badge/框架-Vue.js-42b883?logo=vue.js&logoColor=white" alt="Vue.js">
+  <img src="https://img.shields.io/badge/版本-1.3.2-00A98F" alt="版本 1.3.2">
+  <img src="https://img.shields.io/badge/许可证-AGPLv3-blue" alt="AGPLv3 许可证">
+</p>
 
-## 联网漫画源
+## ✨ 项目简介
 
-以下漫画源已在有道 A7P 上测试可用：
+Doge 漫画网络版 fork 自 [adogecheems/doge-comic](https://github.com/adogecheems/doge-comic)，由 [GuaiRenGR](https://github.com/GuaiRenGR) 维护。项目面向 1020×240 及相同比例的词典笔屏幕，使用 Vue.js 和 miniapp 框架构建。
+
+当前已在有道 A7P 上完成主要功能测试。由于词典笔没有内置输入法和 WebView，项目内置了适配横向小屏的输入键盘，并提供 Pixiv 账号密码、Cookie 和 OAuth Token 导入方式。
+
+## 🚀 核心功能
+
+- 联网搜索、在线阅读和下载漫画
+- 本地图片、图片文件夹和转换后漫画浏览
+- WebP 图片自动转换为阅读器支持的 JPEG
+- 阅读进度自动保存，支持调整图片缩放和渲染同步时间
+- 适配词典笔横向小屏的响应式布局和可隐藏侧边栏
+- Pixiv 搜索、首页推荐、作品简介、多页阅读与下载
+- 支持多种网络线路和漫画源
+
+## 🌐 漫画源
+
+以下源已在有道 A7P 上测试可用：
 
 - 禁漫
 - 哔咔（需要账号登录）
+- Pixiv（需要登录，支持搜索、推荐、阅读和下载）
 - E-Hentai
 - 绅士漫画
 
-nHentai 与 Hitomi 已接入，但尚未在有道 A7P 上完成可用性验证。
+nHentai 和 Hitomi 已接入，但尚未在有道 A7P 上完成可用性验证。
 
-## 预览
+### Pixiv 登录
 
-![index](https://cdn.mmoe.work/public/doge-comic/index.png)
-![reader](https://cdn.mmoe.work/public/doge-comic/reader.png)
+词典笔没有 WebView，Pixiv 支持以下登录方式：
 
-## 安装
+1. 在应用中直接输入 Pixiv 账号和密码。
+2. 在电脑浏览器获取 `PHPSESSID` Cookie 后导入。
+3. 导入 Pixiv OAuth `access_token`/`refresh_token`。
+
+详细步骤和 ADB 文件导入命令见 [Pixiv 登录与 Token/Cookie 获取教程](Pixiv登录与Token-Cookie获取教程.md)。登录状态保存在 miniapp 的 `$dataDir/__kv__` 中，不会写入漫画缓存目录。
+
+## 🖼️ 预览
+
+![首页](https://cdn.mmoe.work/public/doge-comic/index.png)
+![阅读器](https://cdn.mmoe.work/public/doge-comic/reader.png)
+
+## 📦 安装
 
 ### 直接安装
 
-1. 首先确保你已经能够访问词典笔的 adb，否则请先按照
-[听秋念的教程](https://www.bilibili.com/read/cv40931661/?plat_id=35&share_from=article&share_medium=iphone&share_plat=ios&share_source=QQ&share_tag=s_i&timestamp=1741365791&unique_k=3UbJ6rn&opus_fallback=1)
-获取 adb 权限
-
-2. 在 [releases](https://github.com/GuaiRenGR/doge-comic-net/releases) 页面下载最新版本的安装包
-
-3. 连接词典笔的 adb（教程中有写），并将 .amr 安装包文件 push 到词典笔 `/userdisk` 任意目录下（其实你在词典笔的 mtp 文件夹把文件直接拖进去也行...）
+1. 按照[词典笔 ADB 教程](https://www.bilibili.com/read/cv40931661/?plat_id=35&share_from=article&share_medium=iphone&share_plat=ios&share_source=QQ&share_tag=s_i&timestamp=1741365791&unique_k=3UbJ6rn&opus_fallback=1)准备 ADB 环境。
+2. 从 [Releases](https://github.com/GuaiRenGR/doge-comic-net/releases) 下载最新 `.amr` 安装包。
+3. 将安装包传到词典笔，例如：
 
 ```bash
-adb push <你安装包的路径/>all.amr /userdisk/Favorite/
+adb push 8003172478459463.1_3_2.amr /userdisk/Favorite/
 ```
 
-4. 使用adb运行如下命令安装程序
+4. 执行安装：
 
 ```bash
-adb shell "miniapp_cli install /userdisk/Favorite/all.amr" # 也可以是你自己选的路径
+adb shell "miniapp_cli install /userdisk/Favorite/8003172478459463.1_3_2.amr"
 ```
 
-5. 你现在应该可以在桌面看见 Doge 漫画的粉色图标
+### 从源码构建
 
-### 从源码编译安装
-
-老实讲意义不大。
-
-1. 克隆项目存储库到本地
-
-```bash
-git clone https://github.com/GuaiRenGR/doge-comic-net.git
-```
-
-2. 安装依赖
+项目需要 Node.js 16、18 或 20，以及可用的 miniapp 构建工具。构建生产包：
 
 ```bash
 npm install
-```
-
-3. 编译项目
-
-```bash
 npm run build:prod
 ```
 
-编译完成后，在项目根目录下会出现 amr 文件，按上文一样操作即可安装
+构建完成后，项目根目录会生成 `.amr` 安装包，再按上面的 ADB 命令安装。Node.js 22 及更高版本可能与当前构建工具不兼容。
 
-#### 关于Node.js版本
+## 🛠️ 使用说明
 
-由于框架本身的缺陷，如果你的本机node版本为22或更高，可能会在构建时出现如[#4](https://github.com/adogecheems/doge-calculator/issues/4)所示的错误。解决方法是使用nvm切换到node 16|18|20版本，或者直接安装一个较旧版本的node。
-
-## 使用说明
-
-- 本阅读器支持渲染单张图片与图片文件夹，将图片文件导入词典笔后即可通过`本地文件`访问
-- 受限于框架，阅读器不能直接渲染`WEBP`；联网漫画缓存中的 WebP 会由内置 ARM 模块转换为 JPEG
-- 图片文件命名的最佳实践是使用数字编号，否则可能不按正确顺序渲染
-- 如果进度恢复时位置不正确，请尝试适当调大设置中的`渲染同步时间`
-- 较旧的设备由于模块`storage`缺失可能无法保存历史记录
-- 本项目提供了一个便捷的[py脚本](./convert.py)将漫画转换成阅读器可用的形式，使用方法如下：
-
-先安装必要的依赖：
+- 本地漫画应按数字顺序命名，例如 `001.jpg`、`002.jpg`，以保证阅读顺序正确。
+- miniapp 阅读器不支持直接渲染 WebP；联网缓存中的 WebP 会由内置 ARM 转换模块转为 JPEG。
+- 也可以使用 [`convert.py`](convert.py) 将文件夹、ZIP 或 PDF 转换为可阅读的图片目录：
 
 ```bash
 pip install Pillow pypdfium2 tqdm
+python convert.py <漫画文件夹|ZIP|PDF> [输出目录] [-j <并行数>] [--no-confirm]
 ```
 
-然后即可使用如下命令将漫画文件夹转换成阅读器可用的图片文件夹形式：
+- 较旧设备可能缺少 `storage` 模块，因此无法保存历史记录或阅读进度。
 
-```bash
-python convert.py <漫画文件夹路径|zip文件路径|PDF文件路径> [<输出文件夹路径> (默认文件名|文件夹名)] [-j <并行线程数>] [--no-confirm (跳过确认提示)]
+## 🔐 安全提醒
+
+Pixiv 的 `PHPSESSID`、OAuth Token 和哔咔账号信息都属于敏感凭据。不要提交到 Git、聊天群或截图中；传输完成后删除明文 token 文件。若凭据泄露，请及时在对应服务中退出设备、修改密码或撤销 Token。
+
+## 📁 项目结构
+
+```text
+doge-comic-net/
+├── src/                         # miniapp 源码
+├── assets/                      # 静态资源
+├── native/                      # ARM 图片转换模块
+├── webp2jpg-armv7-miniapp/      # WebP 转 JPEG 工具及构建文件
+├── tools/                       # 构建辅助工具
+├── docs/                        # 本地开发文档（不提交）
+├── package.json                 # 构建脚本和应用信息
+└── app_icon.png                # 应用图标
 ```
 
-## 关于
+## 📄 关于
 
 - 原项目：[adogecheems/doge-comic](https://github.com/adogecheems/doge-comic)
 - 原作者：[adogecheems](https://github.com/adogecheems)
 - 网络版维护者：[GuaiRenGR](https://github.com/GuaiRenGR)
-- 项目地址：[github.com/GuaiRenGR/doge-comic-net](https://github.com/GuaiRenGR/doge-comic-net)
+- 项目地址：[GuaiRenGR/doge-comic-net](https://github.com/GuaiRenGR/doge-comic-net)
 - 许可证：AGPLv3
 
-"Doge" 是“词典笔 OS 通用生态系统”的意思 (Dictpen OS Generic Ecosystem) 🐶
+“Doge” 是“词典笔 OS 通用生态系统”（Dictpen OS Generic Ecosystem）的缩写。
 
-如果对你有什么帮助，请给我一个 star ⭐️～
+<div align="center">
+  <sub>为词典笔而生 · 感谢每一颗 ⭐</sub>
+</div>

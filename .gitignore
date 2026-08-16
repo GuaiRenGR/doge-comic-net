@@ -2,3 +2,7 @@
 /.falcon_tmp
 /.temp
 /jsapi/src/toolchains
+node_modules
+/docs
+lib/
+/native/webp2jpg/build/module-objects/
